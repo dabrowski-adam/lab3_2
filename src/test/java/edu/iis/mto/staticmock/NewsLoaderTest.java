@@ -10,8 +10,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.List;
 
-import static com.sun.javaws.JnlpxArgs.verify;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -23,15 +24,6 @@ public class NewsLoaderTest {
 
     @Test
     public void shouldKeepPublicAndSubscriberNewsSeparately() {
-
-        mockStatic(ConfigurationLoader.class);
-        ConfigurationLoader configurationLoader = mock(ConfigurationLoader.class);
-        when(ConfigurationLoader.getInstance()).thenReturn(configurationLoader);
-
-        mockStatic(NewsReaderFactory.class);
-        NewsReader newsReader = mock(NewsReader.class);
-        when(NewsReaderFactory.getReader("WS")).thenReturn(newsReader);
-
 
         PublishableNews publishableNews = new PublishableNews();
         publishableNews.addPublicInfo("public_news");
@@ -49,4 +41,29 @@ public class NewsLoaderTest {
         assertThat(subscribentContent.get(2), Matchers.equalTo("sub_newsC"));
 
     }
+
+    @Test
+    public void shouldCallReadMethodOnce() {
+
+        mockStatic(ConfigurationLoader.class);
+        ConfigurationLoader configurationLoader = mock(ConfigurationLoader.class);
+        when(ConfigurationLoader.getInstance()).thenReturn(configurationLoader);
+
+        Configuration configuration = mock(Configuration.class);
+        when(configurationLoader.loadConfiguration()).thenReturn(configuration);
+
+        mockStatic(NewsReaderFactory.class);
+        NewsReader newsReader = mock(NewsReader.class);
+        when(NewsReaderFactory.getReader(configuration.getReaderType())).thenReturn(newsReader);
+
+        IncomingNews incomingNews = mock(IncomingNews.class);
+        when(newsReader.read()).thenReturn(incomingNews);
+
+        NewsLoader newsLoader = new NewsLoader();
+        newsLoader.loadNews();
+
+        verify(newsReader, times(1)).read();
+
+    }
+
 }
