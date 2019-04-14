@@ -15,6 +15,8 @@ import org.mockito.internal.util.reflection.Whitebox;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.List;
+
 import static org.mockito.Matchers.any;
 
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -31,6 +33,7 @@ public class NewsLoaderTest {
     private ConfigurationLoader configurationLoader;
     private NewsReader newsReader;
     private IncomingNews incomingNews;
+    private PublishableNews publishableNews;
 
     @Before
     public void setup() {
@@ -53,6 +56,8 @@ public class NewsLoaderTest {
 
         incomingNews = mock(IncomingNews.class);
         when(newsReader.read()).thenReturn(incomingNews);
+
+        publishableNews = PublishableNews.create();
     }
 
     @Test public void testMethodLoadConfigurationShouldBeCalled() {
@@ -65,5 +70,26 @@ public class NewsLoaderTest {
 
         newsLoader.loadNews();
         verify(newsReader).read();
+    }
+
+    @Test public void testCheckingDivisionOnPublicNewsAndSubsciptionNews() {
+
+        publishableNews.addPublicInfo("publicNews");
+        publishableNews.addForSubscription("subsciptionNewsTypeA", SubsciptionType.A);
+        publishableNews.addPublicInfo("publicNews");
+        publishableNews.addForSubscription("subsciptionNewsTypeB", SubsciptionType.B);
+        publishableNews.addPublicInfo("publicNews");
+        publishableNews.addForSubscription("subsciptionNewsTypeC", SubsciptionType.C);
+
+        List<String> publicContent = (List<String>)Whitebox.getInternalState(publishableNews,"publicContent");
+        List<String> subscribentContent = (List<String>)Whitebox.getInternalState(publishableNews,"subscribentContent");
+
+        assertThat(publicContent.get(0), Matchers.equalTo("publicNews"));
+        assertThat(publicContent.get(1), Matchers.equalTo("publicNews"));
+        assertThat(publicContent.get(2), Matchers.equalTo("publicNews"));
+
+        assertThat(subscribentContent.get(0), Matchers.equalTo("subsciptionNewsTypeA"));
+        assertThat(subscribentContent.get(1), Matchers.equalTo("subsciptionNewsTypeB"));
+        assertThat(subscribentContent.get(2), Matchers.equalTo("subsciptionNewsTypeC"));
     }
 }
