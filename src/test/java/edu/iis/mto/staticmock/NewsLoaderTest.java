@@ -55,9 +55,15 @@ public class NewsLoaderTest {
         when(newsReader.read()).thenReturn(incomingNews);
     }
 
-    @Test public void testMethod_loadConfigurationShouldBeCalled() {
+    @Test public void testMethodLoadConfigurationShouldBeCalled() {
 
         newsLoader.loadNews();
         verify(configurationLoader).loadConfiguration();
+    }
+
+    @Test public void testMethodReadShouldBeCalled() {
+
+        newsLoader.loadNews();
+        verify(newsReader).read();
     }
 }
