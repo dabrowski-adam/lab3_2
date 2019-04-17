@@ -16,6 +16,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -74,5 +76,11 @@ public class NewsLoaderTest {
         List<String> subscribentContent = (List<String>)Whitebox.getInternalState(result,"subscribentContent");
         List<String> expectedSubscribentContent = expectedSubscriptions.stream().map(x -> x.getContent()).collect(Collectors.toList());
         assertThat(subscribentContent, is(expectedSubscribentContent));
+    }
+
+    @Test
+    public void shouldLoadConfigurationBeCalledInsideLoadNews() {
+        sut.loadNews();
+        verify(ConfigurationLoader.getInstance(), times(1)).loadConfiguration();
     }
 }
