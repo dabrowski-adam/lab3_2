@@ -3,6 +3,7 @@ package lab3_2;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.hamcrest.Matchers.is;
@@ -63,6 +64,15 @@ public class NewsLoaderTest {
 		
 		assertThat(expectedPublicNews.get(0), is(incomingNews.get(0).getContent()));
 		assertThat(expectedSubNews.get(0), is(incomingNews.get(1).getContent()));
+	}
+	
+	@Test
+	public void loaderShouldReturnEmptyListWhenThereAreNoNews() {
+		PublishableNews publishableNews = loader.loadNews();
+		List <String> expectedPublicNews = Whitebox.getInternalState(publishableNews, "publicContent");
+		List <String> expectedSubNews = Whitebox.getInternalState(publishableNews, "subscribentContent");
 		
+		assertThat(expectedPublicNews.size(),is(0));
+		assertThat(expectedSubNews.size(),is(0));
 	}
 }
