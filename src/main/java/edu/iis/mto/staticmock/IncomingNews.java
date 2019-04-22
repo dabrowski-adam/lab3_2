@@ -14,4 +14,8 @@ public class IncomingNews {
 	public void add(IncomingInfo info) {
 		elems.add(info);
 	}
+	
+	public IncomingInfo get(int index) {
+		return elems.get(index);
+	}
 }
