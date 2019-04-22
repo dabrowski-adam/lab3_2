@@ -1,5 +1,6 @@
 import edu.iis.mto.staticmock.*;
 import edu.iis.mto.staticmock.reader.NewsReader;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +18,9 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.reflect.Whitebox;
+
+import java.util.List;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ConfigurationLoader.class, NewsReaderFactory.class})
@@ -36,7 +40,7 @@ public class NewsLoaderTest {
         incomingNews.add(new IncomingInfo("first",SubsciptionType.A));
         incomingNews.add(new IncomingInfo("second",SubsciptionType.B));
         incomingNews.add(new IncomingInfo("third",SubsciptionType.C));
-        incomingNews.add(new IncomingInfo("nnn",SubsciptionType.NONE));
+        incomingNews.add(new IncomingInfo("none",SubsciptionType.NONE));
 
         mockStatic(ConfigurationLoader.class);
         configurationLoader = mock(ConfigurationLoader.class);
@@ -57,7 +61,20 @@ public class NewsLoaderTest {
         verify(configurationLoader, Mockito.times(1)).loadConfiguration();
     }
 
+    @Test
+    public void incommingNewsShouldBeCorrectlyDevided(){
+        publishableNews = newsLoader.loadNews();
+        List<String> publicMessages = Whitebox.getInternalState(publishableNews,"publicContent");
+        List<String> subscribeMessages = Whitebox.getInternalState(publishableNews, "subscribentContent");
 
+        Assert.assertEquals(1,publicMessages.size());
+        Assert.assertEquals(3,subscribeMessages.size());
+
+        Assert.assertEquals("none",publicMessages.get(0));
+        Assert.assertEquals("first",subscribeMessages.get(0));
+        Assert.assertEquals("second",subscribeMessages.get(1));
+        Assert.assertEquals("third",subscribeMessages.get(2));
+    }
 
 
 }
