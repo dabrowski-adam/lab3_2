@@ -4,6 +4,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.hamcrest.Matchers.is;
@@ -33,6 +34,7 @@ import edu.iis.mto.staticmock.reader.NewsReader;
 public class NewsLoaderTest {
 	
 	NewsLoader loader;
+	NewsReader reader;
 	IncomingNews incomingNews;
 	
 	@Before
@@ -47,7 +49,7 @@ public class NewsLoaderTest {
 		
 		loader = new NewsLoader();
 		incomingNews = new IncomingNews();
-		NewsReader reader = mock(NewsReader.class);
+		reader = mock(NewsReader.class);
 		when(NewsReaderFactory.getReader(any())).thenReturn(reader);
 		when(reader.read()).thenReturn(incomingNews);
 	}
@@ -74,5 +76,13 @@ public class NewsLoaderTest {
 		
 		assertThat(expectedPublicNews.size(),is(0));
 		assertThat(expectedSubNews.size(),is(0));
+	}
+	
+	@Test
+	public void readMethodShouldBeCalledOnlyOnceWhenLoadingNews() {
+		incomingNews.add(new IncomingInfo("PUBLIC INFO", SubsciptionType.NONE));
+		incomingNews.add(new IncomingInfo("SUB INFO", SubsciptionType.A));
+		PublishableNews publishableNews = loader.loadNews();
+		verify(reader, times(1)).read();
 	}
 }
