@@ -6,7 +6,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
@@ -24,12 +25,18 @@ public class NewsLoaderTest {
     private NewsLoader newsLoader;
     private NewsReaderFactory newsReaderFactory;
     private ConfigurationLoader configurationLoader;
+    private PublishableNews publishableNews;
 
     @Before
     public void setup(){
-
+        newsLoader = new NewsLoader();
         Configuration configuration = new Configuration();
         IncomingNews incomingNews = new IncomingNews();
+
+        incomingNews.add(new IncomingInfo("first",SubsciptionType.A));
+        incomingNews.add(new IncomingInfo("second",SubsciptionType.B));
+        incomingNews.add(new IncomingInfo("third",SubsciptionType.C));
+        incomingNews.add(new IncomingInfo("nnn",SubsciptionType.NONE));
 
         mockStatic(ConfigurationLoader.class);
         configurationLoader = mock(ConfigurationLoader.class);
@@ -41,8 +48,16 @@ public class NewsLoaderTest {
 
         mockStatic(NewsReaderFactory.class);
         newsReaderFactory = mock(NewsReaderFactory.class);
-        when(NewsReaderFactory.getReader(any())).thenReturn(newsReader);
+        when(NewsReaderFactory.getReader(anyString())).thenReturn(newsReader);
     }
+
+    @Test
+    public void loadConfigurationMethodShouldBeCalledOnce(){
+        publishableNews = newsLoader.loadNews();
+        verify(configurationLoader, Mockito.times(1)).loadConfiguration();
+    }
+
+
 
 
 }
