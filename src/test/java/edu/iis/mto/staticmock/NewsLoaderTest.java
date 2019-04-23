@@ -1,6 +1,7 @@
 package edu.iis.mto.staticmock;
 
 import edu.iis.mto.staticmock.reader.NewsReader;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +9,9 @@ import org.mockito.internal.util.reflection.Whitebox;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -20,8 +24,14 @@ public class NewsLoaderTest {
     private Configuration configuration;
     private IncomingNews incomingNews;
     private NewsLoader newsLoader;
-    private IncomingInfo incomingInfo = new IncomingInfo("contentA", SubsciptionType.A);
     private NewsReader newsReader;
+
+    private void addIncomingInfoToIncomingNews() {
+        incomingNews.add(new IncomingInfo("subscriberContentA", SubsciptionType.A));
+        incomingNews.add(new IncomingInfo("subscriberContentB", SubsciptionType.B));
+        incomingNews.add(new IncomingInfo("subscriberContentC", SubsciptionType.C));
+        incomingNews.add(new IncomingInfo("publicContent", SubsciptionType.NONE));
+    }
 
     @Before
     public void setUp() {
@@ -30,7 +40,7 @@ public class NewsLoaderTest {
 
         newsLoader = new NewsLoader();
         incomingNews = new IncomingNews();
-        incomingNews.add(incomingInfo);
+        addIncomingInfoToIncomingNews();
 
         configuration = new Configuration();
         Whitebox.setInternalState(configuration, "readerType", "WS");
@@ -48,6 +58,23 @@ public class NewsLoaderTest {
     public void testConfigurationLoaderCallsLoadConfigurationOnce() {
         newsLoader.loadNews();
         verify(configurationLoader, times(1)).loadConfiguration();
+    }
+
+    @Test
+    public void testArePublishableNewsDividedIntoPublicAndSubscriber() {
+        PublishableNews publishableNews = newsLoader.loadNews();
+        List<String> publicNews = (List<String>) Whitebox.getInternalState(publishableNews, "publicContent");
+        List<String> subscriberNews = (List<String>) Whitebox.getInternalState(publishableNews, "subscribentContent");
+
+        Assert.assertThat(publicNews.size(), is(1));
+
+        Assert.assertThat(publicNews.get(0), is("publicContent"));
+
+        Assert.assertThat(subscriberNews.size(), is(3));
+
+        Assert.assertThat(subscriberNews.get(0), is("subscriberContentA"));
+        Assert.assertThat(subscriberNews.get(1), is("subscriberContentB"));
+        Assert.assertThat(subscriberNews.get(2), is("subscriberContentC"));
     }
 
 }
