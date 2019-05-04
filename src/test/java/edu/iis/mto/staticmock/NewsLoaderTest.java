@@ -63,4 +63,12 @@ public class NewsLoaderTest {
         assertThat(subscribentContent, hasSize(3));
         assertThat(subscribentContent, contains("A", "B", "C"));
     }
+
+    @Test
+    public void loadNewsShouldReadOnce() {
+        NewsLoader newsLoader = new NewsLoader();
+        newsLoader.loadNews();
+
+        verify(newsReader, times(1)).read();
+    }
 }
